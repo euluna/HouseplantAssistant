@@ -1,3 +1,21 @@
-# Project is published at https://euluna.github.io/HouseplantAssistant/
+# Deployment
 
-The "Add to Task" functionality will not work because we did not get verification to use the Google Tasks API on a published project. It is still in the testing phase, so we can only manually approve specific accounts for access. Please contact Euluna at ega@sfu.ca and provide me with your google accounts so that I can grant them access.
+This project is published at: https://euluna.github.io/HouseplantAssistant/
+
+## Notes on functionality and external APIs
+
+- Add to Tasks: The "Add to my tasks" feature is intentionally disabled for general users. The Google Tasks API requires OAuth verification and has limitations on free-tier usage; maintaining production access would require paid verification and additional ongoing costs which we did not pursue. The button in the UI remains visible but disabled; hovering it displays an explanation. If you need this feature enabled for a small number of accounts for testing, contact the maintainer (see contact information below).
+
+- Plant data source: This project uses the Perenuals plant API (https://perenual.com/docs/api) to fetch species data. In November 2025 the API was updated and this project was modified accordingly to use the current endpoints and response structure.
+
+- Paid entries: Most common species are available under the free API plan, but some species are only accessible on Perenuals' paid tier. In the UI, species that require a paid plan are marked and will show a placeholder and a message indicating they are paid access only.
+
+- Example queries for testing: Lily, Mint, Sage, Grass, Poppy — these are known to return many valid results and are good candidates for quick verification.
+
+## Project origin
+
+This project was initially implemented as a group assignment for CMPT 276 (Software Engineering) at Simon Fraser University. The work documented here was completed by a team of four students.
+
+## Contact
+
+For questions about testing access or small-scale account approvals, contact: ega@sfu.ca
