@@ -195,21 +195,8 @@
         }
 
         function maybeEnableButtons() {
-            console.log('Checking button enable status:', { gapiInited, gisInited });
-            const buttons = document.querySelectorAll('.add-to-tasks');
-            buttons.forEach(button => {
-                if (gapiInited && gisInited) {
-                    console.log('Enabling button');
-                    button.disabled = false;
-                    button.style.opacity = '1';
-                    button.style.cursor = 'pointer';
-                } else {
-                    console.log('Button not ready yet. GAPI:', gapiInited, 'GIS:', gisInited);
-                    button.disabled = true;
-                    button.style.opacity = '0.5';
-                    button.style.cursor = 'not-allowed';
-                }
-            });
+            // Feature disabled due to API limits
+            console.log('Button enablement disabled');
         }
 
         // Make sure the scripts are loaded in the correct order
@@ -233,10 +220,22 @@
                     throw new Error('No plant ID provided');
                 }
 
-                const response = await fetch(`https://perenual.com/api/species/details/${plantId}?key=${config.API_KEY}`);
-                const data = await response.json();
+                const response = await fetch(`https://perenual.com/api/v2/species/details/${plantId}?key=${config.API_KEY}`);
                 
-                if (data.message === "Please Upgrade Plan - https://perenual.com/subscription-api-pricing. Sorry") {
+                // Handle potential non-JSON responses (like the upgrade message)
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    if (text.includes("Upgrade Plan")) {
+                        showPaywallMessage();
+                        return;
+                    }
+                    throw new Error('Invalid API response');
+                }
+                
+                if (data.message && (data.message.includes("Upgrade Plan") || data.message.includes("subscription"))) {
                     showPaywallMessage();
                     return;
                 }
@@ -247,12 +246,14 @@
                             <img src="${data.default_image?.regular_url || data.default_image?.original_url || 'images/plantplaceholder.png'}" 
                                  alt="${data.common_name || 'Plant'}" 
                                  onerror="this.src='images/plantplaceholder.png'">
-                            <button class="add-to-tasks" 
-                                    onclick="addToTasks(${data.id}, '${data.common_name}', '${data.watering}')"
-                                    style="opacity: 0.5; cursor: not-allowed;" 
-                                    disabled>
-                                Add to my tasks
-                            </button>
+                            <div class="tooltip-container">
+                                <button class="add-to-tasks" 
+                                        style="opacity: 0.5; cursor: not-allowed; pointer-events: none;" 
+                                        disabled>
+                                    Add to my tasks
+                                </button>
+                                <span class="tooltip-text">Unfortunately we are unable to keep this feature up, and Google Task API has limits for free version, and we're too broke to pay for it. Pls enjoy looking at the picture of the plant instead (╥ ω ╥)</span>
+                            </div>
                         </div>
                         <div class="plant-details-section">
                             <h1>${data.common_name}</h1>
@@ -279,9 +280,10 @@
 
         function showPaywallMessage() {
             document.querySelector('.plant-details').innerHTML = `
-                <div class="error-message">
-                    <h2>Unable to load plant details</h2>
-                    <p>We're sorry, but we couldn't load the plant information at this time. Please try again later.</p>
+                <div class="error-message" style="text-align: center; padding: 20px;">
+                    <img src="images/broke.jpg" alt="Broke" style="max-width: 110px; margin-bottom: 30px;">
+                    <p style="font-size: 1em; margin-bottom: 20px;">Unfortunately this plant is paid access only, and we're too broke for that (╥﹏╥) Feel free to look up a different plant tho.</p>
+                    <button onclick="window.history.back()" style="padding: 10px 20px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px;">Go Back</button>
                 </div>
             `;
         }
